@@ -1,0 +1,35 @@
+{
+  "name": "@xiangqijs/react",
+  "version": "0.1.0",
+  "description": "@xiangqijs/react",
+  "author": "theprimone <yuns.xie@qq.com>",
+  "homepage": "https://github.com/xiangqijs/xiangqi#readme",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf ./dist && tsc",
+    "dev": "rm -rf ./dist && tsc -w"
+  },
+  "publishConfig": {
+    "registry": "https://registry.yarnpkg.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiangqijs/xiangqi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiangqijs/xiangqi/issues"
+  },
+  "dependencies": {
+    "@xiangqijs/core": "^0.1.0",
+    "react": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.6"
+  }
+}

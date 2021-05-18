@@ -1,0 +1,32 @@
+{
+  "name": "@xiangqijs/core",
+  "version": "0.1.0",
+  "description": "中国象棋。",
+  "keywords": [
+    "xiangqi",
+    "chinese-chess"
+  ],
+  "author": "theprimone <yuns.xie@qq.com>",
+  "homepage": "https://github.com/xiangqijs/xiangqi#readme",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "package.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf ./dist && tsc",
+    "dev": "rm -rf ./dist && tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiangqijs/xiangqi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xiangqijs/xiangqi/issues"
+  },
+  "dependencies": {
+    "nanoevents": "^6.0.0"
+  }
+}
