@@ -10,3 +10,7 @@ export default class Game {
     return emitter.on(event, callback);
   }
 }
+
+/**
+ * 象棋比赛规例：https://www.xqbase.com/protocol/rule_asian.htm
+ */

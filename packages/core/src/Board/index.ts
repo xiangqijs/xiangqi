@@ -1,5 +1,6 @@
 import { Pawn } from '../Pieces';
-import { Limit, Position, Side } from '../Pieces/Base';
+import PieceBase, { Limit, Position, Side } from '../Pieces/Base';
+import emitter from '../emitter';
 
 export default class Board extends Limit {
   turn = Side.Red;
@@ -28,8 +29,13 @@ export default class Board extends Limit {
     ];
   }
 
+  reset() {
+    this.pieces = [...this.initBlockPieces(), ...this.initRedPieces()];
+    emitter.emit('reset', this);
+  }
+
   /**
-   * 获取棋盘中可用的位置集合
+   * 获取棋盘中所有可用的位置集合
    *
    * @returns
    */
@@ -51,5 +57,17 @@ export default class Board extends Limit {
 
   findPiece(position: Position) {
     return this.pieces.find((piece) => piece.at(position));
+  }
+
+  /** 换边 */
+  switch() {
+    this.turn = this.turn === Side.Red ? Side.Black : Side.Red;
+  }
+
+  removePiece(positionOrPiece: Position | PieceBase) {
+    const piece = positionOrPiece instanceof PieceBase ? positionOrPiece : this.findPiece(positionOrPiece);
+    if (piece && piece.side !== this.turn) {
+      this.pieces = this.pieces.filter((item) => item !== piece);
+    }
   }
 }

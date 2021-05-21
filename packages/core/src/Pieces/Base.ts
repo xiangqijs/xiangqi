@@ -142,11 +142,18 @@ export default abstract class PieceBase extends Limit {
 
   /** 移动棋子到下一位置 */
   move(position: Position) {
+    if (this.side !== this.board.turn) {
+      console.log(`[warn] not turn of ${this.side}`);
+      return;
+    }
     const nextPositions = this.getNextPositions();
     if (nextPositions.find((item) => isPositionEqual(item, position))) {
+      this.board.removePiece(position);
+
       this.prevPosition = this.position;
       this.position = position;
 
+      this.board.switch();
       emitter.emit('move', this);
     } else {
       console.log(`[warn] [${this.getName()}] at ${JSON.stringify(this.position)}: next position illegal.`);

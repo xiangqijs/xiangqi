@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useGame } from '../../../packages/react';
 import { Board, Base } from '../../../packages/core';
-import type { Position } from '../../../packages/core/dist/Pieces/Base';
+import { Position, Side } from '../../../packages/core/dist/Pieces/Base';
 import './App.css';
 
 const GRID_SIZE = 48;
@@ -12,9 +12,10 @@ const PieceWrapper: React.FC<{
   position: Position;
   type?: 'placeholder' | 'piece';
   selected?: boolean;
+  moved?: boolean;
   onClick?: (position: Position) => void;
 }> = (props) => {
-  const { position, type = 'placeholder', selected, onClick, children } = props;
+  const { position, type = 'placeholder', selected, moved, onClick, children } = props;
 
   const isPieceType = type === 'piece';
 
@@ -28,6 +29,7 @@ const PieceWrapper: React.FC<{
         height: PIECE_SIZE,
         borderRadius: '50%',
         background: isPieceType ? 'gold' : 'unset',
+        boxShadow: moved ? 'rgba(0, 0, 0, 0.24) 0px 3px 8px' : 'unset',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -47,6 +49,8 @@ const BoardView = (props: { board: Board }) => {
   const { board } = props;
 
   const [currentPiece, setCurrentPiece] = React.useState<Base>();
+  const [prevPiece, setPrevPiece] = React.useState<Base>();
+
   const verticalLinesCount = board.maxX - board.minX + 1;
   const horizontalLinesCount = board.maxY - board.minY + 1;
 
@@ -114,13 +118,16 @@ const BoardView = (props: { board: Board }) => {
             key={`${JSON.stringify(position)}`}
             position={position}
             type={piece ? 'piece' : 'placeholder'}
+            moved={prevPiece && piece === prevPiece}
             selected={piece === currentPiece}
             onClick={(position) => {
               if (currentPiece?.nextPositionsContain(position)) {
                 currentPiece.move(position);
+                setPrevPiece(currentPiece);
+                setCurrentPiece(undefined);
                 return;
               }
-              if (piece) {
+              if (piece && piece.side === board.turn) {
                 setCurrentPiece(piece);
               }
             }}
@@ -138,6 +145,10 @@ export default () => {
 
   return (
     <div style={{ marginTop: GRID_SIZE, marginLeft: GRID_SIZE }}>
+      <div style={{ marginBottom: 36 }}>
+        <span style={{ marginRight: 12 }}>{game.board.turn === Side.Red ? '红方' : '黑方'}着手中...</span>
+        <button onClick={() => game.board.reset()}>重置</button>
+      </div>
       <BoardView board={game.board} />
     </div>
   );

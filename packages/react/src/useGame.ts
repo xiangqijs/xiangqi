@@ -6,6 +6,9 @@ const initGame = (forceUpdate: () => void) => {
   game.on('move', () => {
     forceUpdate();
   });
+  game.on('reset', () => {
+    forceUpdate();
+  });
   return game;
 };
 
