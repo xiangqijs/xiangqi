@@ -1,4 +1,4 @@
-import Base, { Type, Side } from './Base';
+import Base, { Type, Side, PositionInteraction } from './Base';
 import type { PieceInitOptions, PieceCreateOptions, Position } from './Base';
 import { filterPositions } from './utils';
 
@@ -8,8 +8,6 @@ import { filterPositions } from './utils';
 export default class Pawn extends Base {
   constructor(options: PieceInitOptions) {
     super({ ...options, type: Type.Pawn });
-
-    this.checkPosition = this.checkPosition.bind(this);
   }
 
   static createRed(options: PieceCreateOptions) {
@@ -32,34 +30,27 @@ export default class Pawn extends Base {
 
   @filterPositions
   getNextPositions() {
+    const positionInteraction = PositionInteraction.load(this.position);
     if (this.side === Side.Black) {
       // 黑方
-      if (this.position.y <= 5) {
+      if (positionInteraction.y <= 5) {
         // 未过河每次只能向前走一步
-        return [{ x: this.position.x, y: this.position.y + 1 }];
+        return [positionInteraction.clone().bottom()];
       }
       // 过河不能向后走
       return [
-        { x: this.position.x, y: this.position.y + 1 },
-        { x: this.position.x + 1, y: this.position.y },
-        { x: this.position.x - 1, y: this.position.y },
+        positionInteraction.clone().bottom(),
+        positionInteraction.clone().right(),
+        positionInteraction.clone().left(),
       ];
     }
 
     // 红方
-    if (this.position.y >= 6) {
+    if (positionInteraction.y >= 6) {
       // 未过河每次只能向前走一步
-      return [{ x: this.position.x, y: this.position.y - 1 }];
+      return [positionInteraction.clone().top()];
     }
     // 过河不能向后走
-    return [
-      { x: this.position.x, y: this.position.y - 1 },
-      { x: this.position.x + 1, y: this.position.y },
-      { x: this.position.x - 1, y: this.position.y },
-    ];
-  }
-
-  move(position: Position) {
-    super.move(position);
+    return [positionInteraction.clone().top(), positionInteraction.clone().right(), positionInteraction.clone().left()];
   }
 }

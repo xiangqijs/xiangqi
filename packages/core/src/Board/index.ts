@@ -1,6 +1,16 @@
-import { Pawn } from '../Pieces';
+import { Pawn, Cannon } from '../Pieces';
 import PieceBase, { Limit, Position, Side } from '../Pieces/Base';
 import emitter from '../emitter';
+
+// 棋盘坐标定义：
+//
+// 原点坐标 (1, 1)
+//     ┌──────────> x
+//     │
+//     │
+//     │
+//     │
+//     y
 
 export default class Board extends Limit {
   turn = Side.Red;
@@ -16,6 +26,8 @@ export default class Board extends Limit {
       Pawn.createBlack({ initPosition: { x: 5, y: 4 }, board: this }),
       Pawn.createBlack({ initPosition: { x: 7, y: 4 }, board: this }),
       Pawn.createBlack({ initPosition: { x: 9, y: 4 }, board: this }),
+      Cannon.createBlack({ initPosition: { x: 2, y: 3 }, board: this }),
+      Cannon.createBlack({ initPosition: { x: 8, y: 3 }, board: this }),
     ];
   }
 
@@ -26,6 +38,8 @@ export default class Board extends Limit {
       Pawn.createRed({ initPosition: { x: 5, y: 7 }, board: this }),
       Pawn.createRed({ initPosition: { x: 7, y: 7 }, board: this }),
       Pawn.createRed({ initPosition: { x: 9, y: 7 }, board: this }),
+      Cannon.createRed({ initPosition: { x: 2, y: 8 }, board: this }),
+      Cannon.createRed({ initPosition: { x: 8, y: 8 }, board: this }),
     ];
   }
 

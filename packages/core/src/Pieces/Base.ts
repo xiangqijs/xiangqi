@@ -25,9 +25,7 @@ export enum Side {
 }
 
 export interface Position {
-  /** 1-9 */
   x: number;
-  /** 1-10 */
   y: number;
 }
 
@@ -46,13 +44,73 @@ export type PieceCreateOptions = Omit<PieceInitOptions, 'side'>;
 
 /** 棋子坐标限制 */
 export class Limit {
+  /** 棋子 x 轴最小值 */
   minX = 1;
 
+  /** 棋子 x 轴最大值 */
   maxX = 9;
 
+  /** 棋子 y 轴最小值 */
   minY = 1;
 
+  /** 棋子 y 轴最大值 */
   maxY = 10;
+}
+
+export class PositionInteraction extends Limit {
+  x: number;
+  y: number;
+
+  constructor(position: Position) {
+    super();
+    this.x = position.x;
+    this.y = position.y;
+  }
+
+  static load(position: Position) {
+    return new PositionInteraction(position);
+  }
+
+  clone() {
+    return new PositionInteraction(this.dump());
+  }
+
+  valid() {
+    const validX = this.x >= this.minX && this.x <= this.maxX;
+    const validY = this.y >= this.minY && this.y <= this.maxY;
+    return validX && validY;
+  }
+
+  // 位置上移
+  top(distance = 1) {
+    this.y = this.y - distance;
+    return this;
+  }
+
+  // 位置右移
+  right(distance = 1) {
+    this.x = this.x + distance;
+    return this;
+  }
+
+  // 位置下移
+  bottom(distance = 1) {
+    this.top(-distance);
+    return this;
+  }
+
+  // 位置左移
+  left(distance = 1) {
+    this.right(-distance);
+    return this;
+  }
+
+  dump() {
+    return {
+      x: this.x,
+      y: this.y,
+    };
+  }
 }
 
 /**
@@ -84,8 +142,6 @@ export default abstract class PieceBase extends Limit {
     this.side = options.side;
     this.initPosition = options.initPosition;
     this.position = options.initPosition;
-
-    this.checkPosition = this.checkPosition.bind(this);
   }
 
   /**
@@ -108,28 +164,6 @@ export default abstract class PieceBase extends Limit {
     return this.getNextPositions().some((item) => isPositionEqual(item, position));
   }
 
-  /**
-   * 校验给定的位置是否合法
-   *
-   * @param position
-   * @returns
-   */
-  checkPosition(position: Position) {
-    const validX = position.x >= this.minX && position.x <= this.maxX;
-    const validY = position.y >= this.minY && position.y <= this.maxY;
-    return validX && validY;
-  }
-
-  /**
-   * 校验后得出合法的位置集合
-   *
-   * @param position
-   * @returns
-   */
-  loadPositions(positions: Position[]) {
-    return positions.filter((position) => this.checkPosition(position));
-  }
-
   /** 获取棋子显示名称 */
   abstract getName(): string;
 
@@ -141,7 +175,7 @@ export default abstract class PieceBase extends Limit {
   // abstract toNotation
 
   /** 移动棋子到下一位置 */
-  move(position: Position) {
+  moveTo(position: Position) {
     if (this.side !== this.board.turn) {
       console.log(`[warn] not turn of ${this.side}`);
       return;

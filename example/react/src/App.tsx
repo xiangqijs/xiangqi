@@ -122,12 +122,13 @@ const BoardView = (props: { board: Board }) => {
             selected={piece === currentPiece}
             onClick={(position) => {
               if (currentPiece?.nextPositionsContain(position)) {
-                currentPiece.move(position);
+                currentPiece.moveTo(position);
                 setPrevPiece(currentPiece);
                 setCurrentPiece(undefined);
                 return;
               }
               if (piece && piece.side === board.turn) {
+                console.log('nextPositions', piece.getNextPositions());
                 setCurrentPiece(piece);
               }
             }}
