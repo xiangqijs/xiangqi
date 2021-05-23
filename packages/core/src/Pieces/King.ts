@@ -61,7 +61,7 @@ export default class King extends Base {
     const otherSideKing = this.board.pieces.find((item) => item.type === Type.King && item.side !== this.side) as King;
 
     return result.filter((nextPosition) => {
-      return !!whetherKingsFaced({
+      return !whetherKingsFaced({
         kingPositions: [otherSideKing.position, nextPosition],
         board: this.board,
       });

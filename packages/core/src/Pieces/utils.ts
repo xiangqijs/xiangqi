@@ -20,14 +20,17 @@ export function whetherKingsFaced(options: {
     const targetX = kingA.x;
     const piecesVertical = board.pieces.filter((item) => item.position.x === targetX);
     const piecesVerticalBetweenKings = piecesVertical.filter(
-      (item) => item.position.y > Math.min(kingA.y, kingA.y) && item.position.y < Math.max(kingB.y, kingB.y)
+      (item) => item.position.y > Math.min(kingA.y, kingB.y) && item.position.y < Math.max(kingA.y, kingB.y)
     );
     if (piecesVerticalBetweenKings.length >= 2) {
       return false;
     }
+    if (piecesVerticalBetweenKings.length === 0) {
+      return true;
+    }
     // 当两王之间只有一个棋子时
     const onlyOnePiece = piecesVerticalBetweenKings[0];
-    if (onlyOnePiece === notKingPiece?.piece && notKingPiece.nextPosition.x !== targetX) {
+    if (notKingPiece && onlyOnePiece === notKingPiece?.piece && notKingPiece.nextPosition.x !== targetX) {
       return true;
     }
     return false;
