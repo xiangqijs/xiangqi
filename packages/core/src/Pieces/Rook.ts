@@ -3,29 +3,29 @@ import type { PieceInitOptions, PieceCreateOptions, Position } from './Base';
 import { filterPositions } from './utils';
 
 /**
- * （炮 | 砲）类
+ * （車 | 俥）类
  */
-export default class Cannon extends Base {
+export default class Rook extends Base {
   constructor(options: PieceInitOptions) {
     super({ ...options, type: Type.Cannon });
   }
 
   static createRed(options: PieceCreateOptions) {
-    return new Cannon({
+    return new Rook({
       ...options,
       side: Side.Red,
     });
   }
 
   static createBlack(options: PieceCreateOptions) {
-    return new Cannon({
+    return new Rook({
       ...options,
       side: Side.Black,
     });
   }
 
   getName() {
-    return this.side === Side.Red ? '炮' : '砲';
+    return this.side === Side.Red ? '車' : '俥';
   }
 
   @filterPositions
@@ -66,9 +66,9 @@ export default class Cannon extends Base {
           result.push(item);
         }
         if (pieceAtPosition) {
-          // 计算逻辑上与 Rook 基本相同，1 => 0 则为 Rook
-          if (piecesCount[index] === 1 && pieceAtPosition.side !== this.side) {
-            // 如果当前位置有棋子且之前已经有过一个棋子则为可用位置
+          // 计算逻辑上与 Cannon 基本相同，0 => 1 则为 Cannon
+          if (piecesCount[index] === 0 && pieceAtPosition.side !== this.side) {
+            // 如果当前位置有棋子且之前没有棋子则为可用位置
             result.push(item);
           }
           // 各方向上棋子计数累加

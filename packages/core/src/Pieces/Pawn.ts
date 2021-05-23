@@ -1,5 +1,5 @@
 import Base, { Type, Side, PositionInteraction } from './Base';
-import type { PieceInitOptions, PieceCreateOptions, Position } from './Base';
+import type { PieceInitOptions, PieceCreateOptions } from './Base';
 import { filterPositions } from './utils';
 
 /**

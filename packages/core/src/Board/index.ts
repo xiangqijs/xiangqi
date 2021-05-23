@@ -1,4 +1,4 @@
-import { Pawn, Cannon } from '../Pieces';
+import { Pawn, Cannon, Rook } from '../Pieces';
 import PieceBase, { Limit, Position, Side } from '../Pieces/Base';
 import emitter from '../emitter';
 
@@ -28,6 +28,8 @@ export default class Board extends Limit {
       Pawn.createBlack({ initPosition: { x: 9, y: 4 }, board: this }),
       Cannon.createBlack({ initPosition: { x: 2, y: 3 }, board: this }),
       Cannon.createBlack({ initPosition: { x: 8, y: 3 }, board: this }),
+      Rook.createBlack({ initPosition: { x: 1, y: 1 }, board: this }),
+      Rook.createBlack({ initPosition: { x: 9, y: 1 }, board: this }),
     ];
   }
 
@@ -40,6 +42,8 @@ export default class Board extends Limit {
       Pawn.createRed({ initPosition: { x: 9, y: 7 }, board: this }),
       Cannon.createRed({ initPosition: { x: 2, y: 8 }, board: this }),
       Cannon.createRed({ initPosition: { x: 8, y: 8 }, board: this }),
+      Rook.createRed({ initPosition: { x: 1, y: 10 }, board: this }),
+      Rook.createRed({ initPosition: { x: 9, y: 10 }, board: this }),
     ];
   }
 
