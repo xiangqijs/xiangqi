@@ -1,11 +1,11 @@
 import { createNanoEvents } from 'nanoevents';
 import type { Emitter } from 'nanoevents';
 
-import { Base } from './Pieces';
+import { PieceBase } from './Pieces';
 import Board from './Board';
 
 export interface Events {
-  move: (piece: Base) => void;
+  move: (piece: PieceBase) => void;
   reset: (board: Board) => void;
 }
 

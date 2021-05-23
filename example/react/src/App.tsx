@@ -1,8 +1,6 @@
 import React from 'react';
 
-import { useGame } from '../../../packages/react';
-import { Board, Base } from '../../../packages/core';
-import { Position, Side, Type } from '../../../packages/core/dist/Pieces/Base';
+import { useGame, Board, PieceBase, Position, Side, Type } from '../../../packages/react';
 import './App.css';
 
 const GRID_SIZE = 48;
@@ -56,8 +54,8 @@ const PieceWrapper: React.FC<{
 const BoardView = (props: { board: Board }) => {
   const { board } = props;
 
-  const [currentPiece, setCurrentPiece] = React.useState<Base>();
-  const [prevPiece, setPrevPiece] = React.useState<Base>();
+  const [currentPiece, setCurrentPiece] = React.useState<PieceBase>();
+  const [prevPiece, setPrevPiece] = React.useState<PieceBase>();
 
   const verticalLinesCount = board.maxX - board.minX + 1;
   const horizontalLinesCount = board.maxY - board.minY + 1;
