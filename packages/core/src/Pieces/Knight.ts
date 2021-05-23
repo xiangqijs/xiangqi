@@ -3,11 +3,11 @@ import type { PieceInitOptions, PieceCreateOptions, Position } from './Base';
 import { filterPositions } from './utils';
 
 /**
- * （馬 | 傌）类
+ * （傌 | 馬）类
  */
 export default class Knight extends Base {
   constructor(options: PieceInitOptions) {
-    super({ ...options, type: Type.Cannon });
+    super({ ...options, type: Type.Knight });
   }
 
   static createRed(options: PieceCreateOptions) {
@@ -25,7 +25,7 @@ export default class Knight extends Base {
   }
 
   getName() {
-    return this.side === Side.Red ? '馬' : '傌';
+    return this.side === Side.Red ? '傌' : '馬';
   }
 
   @filterPositions
@@ -41,7 +41,7 @@ export default class Knight extends Base {
       left: positionInteraction.clone().left(),
     };
 
-    const unblockPositions = {
+    const nextPositions = {
       top: [positionInteraction.clone().top(2).left(), positionInteraction.clone().top(2).right()],
       right: [positionInteraction.clone().right(2).top(), positionInteraction.clone().right(2).bottom()],
       bottom: [positionInteraction.clone().bottom(2).left(), positionInteraction.clone().bottom(2).right()],
@@ -51,7 +51,7 @@ export default class Knight extends Base {
     Object.keys(blockPositions).forEach((direction) => {
       const blockPiece = this.board.findPiece(blockPositions[direction as keyof typeof blockPositions]);
       if (!blockPiece) {
-        unblockPositions[direction as keyof typeof blockPositions].forEach((item) => {
+        nextPositions[direction as keyof typeof nextPositions].forEach((item) => {
           const pieceAtPosition = this.board.findPiece(item);
           if (!pieceAtPosition) {
             result.push(item);

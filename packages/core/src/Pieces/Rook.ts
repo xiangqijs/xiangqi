@@ -3,11 +3,11 @@ import type { PieceInitOptions, PieceCreateOptions, Position } from './Base';
 import { filterPositions } from './utils';
 
 /**
- * （車 | 俥）类
+ * （俥 | 車）类
  */
 export default class Rook extends Base {
   constructor(options: PieceInitOptions) {
-    super({ ...options, type: Type.Cannon });
+    super({ ...options, type: Type.Rook });
   }
 
   static createRed(options: PieceCreateOptions) {
@@ -25,7 +25,7 @@ export default class Rook extends Base {
   }
 
   getName() {
-    return this.side === Side.Red ? '車' : '俥';
+    return this.side === Side.Red ? '俥' : '車';
   }
 
   @filterPositions
