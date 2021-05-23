@@ -12,12 +12,20 @@ const PieceWrapper: React.FC<{
   position: Position;
   type?: 'placeholder' | 'piece';
   selected?: boolean;
+  next?: boolean;
   moved?: boolean;
   onClick?: (position: Position) => void;
 }> = (props) => {
-  const { position, type = 'placeholder', selected, moved, onClick, children } = props;
+  const { position, type = 'placeholder', selected, next, moved, onClick, children } = props;
 
   const isPieceType = type === 'piece';
+
+  const getBackground = () => {
+    if (next) {
+      return '#ffef99';
+    }
+    return isPieceType ? 'gold' : 'unset';
+  };
 
   return (
     <div
@@ -28,7 +36,7 @@ const PieceWrapper: React.FC<{
         width: PIECE_SIZE,
         height: PIECE_SIZE,
         borderRadius: '50%',
-        background: isPieceType ? 'gold' : 'unset',
+        background: getBackground(),
         boxShadow: moved ? 'rgba(0, 0, 0, 0.24) 0px 3px 8px' : 'unset',
         display: 'flex',
         justifyContent: 'center',
@@ -118,6 +126,7 @@ const BoardView = (props: { board: Board }) => {
             key={`${JSON.stringify(position)}`}
             position={position}
             type={piece ? 'piece' : 'placeholder'}
+            next={currentPiece && currentPiece?.nextPositionsContain(position)}
             moved={prevPiece && piece === prevPiece}
             selected={piece === currentPiece}
             onClick={(position) => {
@@ -128,7 +137,6 @@ const BoardView = (props: { board: Board }) => {
                 return;
               }
               if (piece && piece.side === board.turn) {
-                console.log('nextPositions', piece.getNextPositions());
                 setCurrentPiece(piece);
               }
             }}
