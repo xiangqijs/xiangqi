@@ -1,4 +1,4 @@
-import { Pawn, Cannon, Rook, Knight, Bishop, Advisor } from '../Pieces';
+import { Pawn, Cannon, Rook, Knight, Bishop, Advisor, King } from '../Pieces';
 import PieceBase, { Limit, Position, Side } from '../Pieces/Base';
 import emitter from '../emitter';
 
@@ -36,6 +36,7 @@ export default class Board extends Limit {
       Bishop.createBlack({ initPosition: { x: 7, y: 1 }, board: this }),
       Advisor.createBlack({ initPosition: { x: 4, y: 1 }, board: this }),
       Advisor.createBlack({ initPosition: { x: 6, y: 1 }, board: this }),
+      King.createBlack({ initPosition: { x: 5, y: 1 }, board: this }),
     ];
   }
 
@@ -56,6 +57,7 @@ export default class Board extends Limit {
       Bishop.createRed({ initPosition: { x: 7, y: 10 }, board: this }),
       Advisor.createRed({ initPosition: { x: 4, y: 10 }, board: this }),
       Advisor.createRed({ initPosition: { x: 6, y: 10 }, board: this }),
+      King.createRed({ initPosition: { x: 5, y: 10 }, board: this }),
     ];
   }
 

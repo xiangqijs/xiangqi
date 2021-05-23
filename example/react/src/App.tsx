@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useGame } from '../../../packages/react';
 import { Board, Base } from '../../../packages/core';
-import { Position, Side } from '../../../packages/core/dist/Pieces/Base';
+import { Position, Side, Type } from '../../../packages/core/dist/Pieces/Base';
 import './App.css';
 
 const GRID_SIZE = 48;
@@ -130,6 +130,9 @@ const BoardView = (props: { board: Board }) => {
             moved={prevPiece && piece === prevPiece}
             selected={piece === currentPiece}
             onClick={(position) => {
+              if (board.pieces.filter((item) => item.type === Type.King).length < 2) {
+                return;
+              }
               if (currentPiece?.nextPositionsContain(position)) {
                 currentPiece.moveTo(position);
                 setPrevPiece(currentPiece);
