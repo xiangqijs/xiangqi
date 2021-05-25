@@ -1,6 +1,11 @@
-import { Pawn, Cannon, Rook, Knight, Bishop, Advisor, King } from '../Pieces';
-import PieceBase, { Limit, Position, Side } from '../Pieces/Base';
+import { Pawn, Cannon, Rook, Knight, Bishop, Advisor, King, Pieces } from '../Pieces';
+import PieceBase, { Limit, Position, Side, DumpedPiece, Type } from '../Pieces/Base';
 import emitter from '../emitter';
+
+export interface DumpedBoard {
+  turn: Side;
+  pieces: DumpedPiece[];
+}
 
 // 棋盘坐标定义：
 //
@@ -102,5 +107,26 @@ export default class Board extends Limit {
     if (piece && piece.side !== this.turn) {
       this.pieces = this.pieces.filter((item) => item !== piece);
     }
+  }
+
+  dump(): DumpedBoard {
+    return {
+      turn: this.turn,
+      pieces: this.pieces.map((item) => item.dump()),
+    };
+  }
+
+  static load(dumpedBoard: DumpedBoard) {
+    const board = new Board();
+    board.turn = dumpedBoard.turn;
+    board.pieces = dumpedBoard.pieces.map((item) => {
+      const MapPiece = Pieces[item.type];
+      return new MapPiece({
+        board,
+        side: item.side,
+        initPosition: item.position,
+      });
+    });
+    return board;
   }
 }

@@ -24,6 +24,12 @@ export enum Side {
   Black = 'Black',
 }
 
+export interface DumpedPiece {
+  type: Type;
+  side: Side;
+  position: Position;
+}
+
 export interface Position {
   x: number;
   y: number;
@@ -192,5 +198,13 @@ export default abstract class PieceBase extends Limit {
     } else {
       console.log(`[warn] [${this.getName()}] at ${JSON.stringify(this.position)}: next position illegal.`);
     }
+  }
+
+  dump(): DumpedPiece {
+    return {
+      type: this.type,
+      side: this.side,
+      position: this.position,
+    };
   }
 }
