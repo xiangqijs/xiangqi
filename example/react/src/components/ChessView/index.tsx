@@ -1,17 +1,46 @@
 import React from 'react';
 
-import { Board, PieceBase, Type } from '@xiangqijs/react';
+import { Board, PieceBase, Type, Position } from '@xiangqijs/react';
 import PieceWrapper from './PieceWrapper';
 import { GRID_SIZE } from './constants';
 
-const ChessView = (props: { board: Board }) => {
-  const { board } = props;
+export interface ActionType {
+  click: (position: Position) => void;
+}
+
+export interface ChessViewProps {
+  board: Board;
+  actionRef?: React.MutableRefObject<ActionType | undefined> | ((actionRef: ActionType) => void);
+}
+
+const ChessView: React.FC<ChessViewProps> = (props) => {
+  const { board, actionRef } = props;
 
   const [currentPiece, setCurrentPiece] = React.useState<PieceBase>();
   const [prevPiece, setPrevPiece] = React.useState<PieceBase>();
 
   const verticalLinesCount = board.maxX - board.minX + 1;
   const horizontalLinesCount = board.maxY - board.minY + 1;
+
+  const handleClick = (position: Position) => {
+    const piece = board.findPiece(position);
+    if (board.pieces.filter((item) => item.type === Type.King).length < 2) {
+      return;
+    }
+    if (currentPiece?.nextPositionsContain(position)) {
+      currentPiece.moveTo(position);
+      setPrevPiece(currentPiece);
+      setCurrentPiece(undefined);
+      return;
+    }
+    if (piece && piece.side === board.turn) {
+      setCurrentPiece(piece);
+    }
+  };
+
+  React.useImperativeHandle(actionRef, () => ({
+    click: handleClick,
+  }));
 
   return (
     <div style={{ display: 'inline-block', padding: GRID_SIZE * 1.5 }}>
@@ -86,20 +115,7 @@ const ChessView = (props: { board: Board }) => {
               next={currentPiece && currentPiece?.nextPositionsContain(position)}
               moved={prevPiece && piece === prevPiece}
               selected={piece === currentPiece}
-              onClick={(position) => {
-                if (board.pieces.filter((item) => item.type === Type.King).length < 2) {
-                  return;
-                }
-                if (currentPiece?.nextPositionsContain(position)) {
-                  currentPiece.moveTo(position);
-                  setPrevPiece(currentPiece);
-                  setCurrentPiece(undefined);
-                  return;
-                }
-                if (piece && piece.side === board.turn) {
-                  setCurrentPiece(piece);
-                }
-              }}
+              onClick={handleClick}
             >
               {piece && <span style={{ color: piece.side.toLowerCase() }}>{piece.getName()}</span>}
             </PieceWrapper>
