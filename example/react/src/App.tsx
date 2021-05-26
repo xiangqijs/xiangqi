@@ -6,17 +6,12 @@ import { random as randomAI } from '@xiangqijs/ai';
 import ChessView, { ActionType } from './components/ChessView';
 
 function actions(fns: (() => void)[], index = 0) {
-  const current = fns[index];
-  if (!current) {
-    console.log('actions end.');
-    return;
+  fns[index]();
+  if (index + 1 < fns.length) {
+    setTimeout(() => {
+      actions(fns, index + 1);
+    }, 640);
   }
-  console.log(`call fn ${index}`);
-  current();
-  const timer = setTimeout(() => {
-    actions(fns, index + 1);
-    clearTimeout(timer);
-  }, 24);
 }
 
 export default () => {

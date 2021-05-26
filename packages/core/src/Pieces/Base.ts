@@ -182,12 +182,7 @@ export default abstract class PieceBase extends Limit {
 
   /** 移动棋子到下一位置 */
   moveTo(position: Position) {
-    if (this.side !== this.board.turn) {
-      console.log(`[warn] not turn of ${this.side}`);
-      return;
-    }
-    const nextPositions = this.getNextPositions();
-    if (nextPositions.find((item) => isPositionEqual(item, position))) {
+    if (this.nextPositionsContain(position)) {
       this.board.removePiece(position);
 
       this.prevPosition = this.position;
