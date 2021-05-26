@@ -9,8 +9,9 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - run: npm install
-      - run: npm run demo-build:react
+      - run: yarn
+      - run: yarn build
+      - run: yarn run demo-build:react
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
