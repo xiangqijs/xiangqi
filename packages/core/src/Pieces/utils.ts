@@ -46,14 +46,17 @@ export function filterPositions(target: any, propertyKey: string, descriptor: Pr
       .map((item) => (item instanceof PositionInteraction ? item.dump() : item));
     return result.filter((nextPosition) => {
       const [kingA, kingB] = this.board.pieces.filter((item) => item.type === Type.King);
-      return !whetherKingsFaced({
-        kingPositions: [kingA.position, kingB.position],
-        board: this.board,
-        notKingPiece: {
-          piece: this,
-          nextPosition: nextPosition,
-        },
-      });
+      if (kingA && kingB) {
+        return !whetherKingsFaced({
+          kingPositions: [kingA.position, kingB.position],
+          board: this.board,
+          notKingPiece: {
+            piece: this,
+            nextPosition: nextPosition,
+          },
+        });
+      }
+      return true;
     });
   };
 }

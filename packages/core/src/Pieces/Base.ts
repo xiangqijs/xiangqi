@@ -188,8 +188,12 @@ export default abstract class PieceBase extends Limit {
       this.prevPosition = this.position;
       this.position = position;
 
-      this.board.switch();
       emitter.emit('move', this);
+      if (this.board.end()) {
+        // 当移除王棋时游戏结束，无需换边
+        return;
+      }
+      this.board.switch();
     } else {
       console.log(`[warn] [${this.getName()}] at ${JSON.stringify(this.position)}: next position illegal.`);
     }

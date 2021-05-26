@@ -66,6 +66,10 @@ export default class Board extends Limit {
     ];
   }
 
+  end() {
+    return this.pieces.filter((item) => item.type === Type.King).length < 2;
+  }
+
   reset() {
     this.pieces = [...this.initBlockPieces(), ...this.initRedPieces()];
     this.turn = Side.Red;
@@ -100,12 +104,14 @@ export default class Board extends Limit {
   /** 换边 */
   switch() {
     this.turn = this.turn === Side.Red ? Side.Black : Side.Red;
+    emitter.emit('switch', this.turn);
   }
 
   removePiece(positionOrPiece: Position | PieceBase) {
     const piece = positionOrPiece instanceof PieceBase ? positionOrPiece : this.findPiece(positionOrPiece);
     if (piece && piece.side !== this.turn) {
       this.pieces = this.pieces.filter((item) => item !== piece);
+      return piece;
     }
   }
 

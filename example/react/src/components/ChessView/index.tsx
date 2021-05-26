@@ -24,6 +24,10 @@ const ChessView: React.FC<ChessViewProps> = (props) => {
 
   const handleClick = (position: Position) => {
     const piece = board.findPiece(position);
+    if (currentPiece === piece) {
+      setCurrentPiece(undefined);
+      return
+    }
     if (board.pieces.filter((item) => item.type === Type.King).length < 2) {
       return;
     }
