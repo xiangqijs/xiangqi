@@ -16,7 +16,7 @@
     "pub": "lerna publish from-git",
     "demo:react": "cd example/react && vite --host",
     "demo-build:react": "cd example/react && vite build",
-    "dev": "npm run demo"
+    "dev": "npm run demo:react"
   },
   "devDependencies": {
     "@types/react-dom": "^17.0.5",
