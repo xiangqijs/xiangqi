@@ -1,10 +1,20 @@
 import { Pawn, Cannon, Rook, Knight, Bishop, Advisor, King, Pieces } from '../Pieces';
-import PieceBase, { Limit, Position, Side, DumpedPiece, Type } from '../Pieces/Base';
+import PieceBase, { Limit, Position, Side, DumpedPiece, Type, PieceBaseOptions } from '../Pieces/Base';
 import emitter from '../emitter';
 
 export interface DumpedBoard {
   turn: Side;
   pieces: DumpedPiece[];
+}
+
+/** 每一着的数据结构 */
+export interface Move {
+  type: Type;
+  side: Side;
+  from: Position;
+  to: Position;
+  // 该着是否吃对方棋子
+  eat?: Type;
 }
 
 // 棋盘坐标定义：
@@ -22,7 +32,34 @@ export default class Board extends Limit {
 
   positions = this.getPositions();
 
+  history: Move[] = [];
+
+  head = -1;
+
   pieces = [...this.initBlockPieces(), ...this.initRedPieces()];
+
+  constructor() {
+    super();
+    emitter.on('move', (piece, eatenPiece) => {
+      const move: Move = {
+        type: piece.type,
+        side: piece.side,
+        from: piece.prevPosition!,
+        to: piece.position,
+      };
+      if (eatenPiece) {
+        move.eat = eatenPiece.type;
+      }
+
+      // 如果 head 不是指向最后一着，则在移动时需要重写 history
+      if (this.head + 1 < this.history.length) {
+        this.history = this.history.slice(0, this.head + 1);
+      }
+
+      this.history.push(move);
+      this.head = this.history.length - 1;
+    });
+  }
 
   initBlockPieces() {
     return [
@@ -76,6 +113,50 @@ export default class Board extends Limit {
     emitter.emit('reset', this);
   }
 
+  canUndo() {
+    return this.history.length > 0 && this.head >= 0;
+  }
+
+  undo() {
+    if (this.canUndo()) {
+      const undoMove = this.history[this.head];
+      const targetPiece = this.findPiece(undoMove.to)!;
+      targetPiece.position = undoMove.from;
+      targetPiece.prevPosition = undefined;
+      if (undoMove.eat) {
+        this.createPiece({
+          type: undoMove.eat,
+          side: undoMove.side === Side.Black ? Side.Red : Side.Black,
+          initPosition: undoMove.to,
+        });
+      }
+      this.head -= 1;
+      emitter.emit('undo', undoMove);
+    } else {
+      console.warn('cannot undo!');
+    }
+  }
+
+  canRedo() {
+    return this.head + 1 !== this.history.length;
+  }
+
+  redo() {
+    if (this.canRedo()) {
+      const redoMove = this.history[this.head + 1];
+      const targetPiece = this.findPiece(redoMove.from)!;
+      targetPiece.position = redoMove.to;
+      targetPiece.prevPosition = redoMove.from;
+      if (redoMove.eat) {
+        this.eatPiece(redoMove.to);
+      }
+      this.head += 1;
+      emitter.emit('undo', redoMove);
+    } else {
+      console.warn('cannot redo!');
+    }
+  }
+
   /**
    * 获取棋盘中所有可用的位置集合
    *
@@ -107,10 +188,11 @@ export default class Board extends Limit {
     emitter.emit('switch', this.turn);
   }
 
-  removePiece(positionOrPiece: Position | PieceBase) {
+  eatPiece(positionOrPiece: Position | PieceBase) {
     const piece = positionOrPiece instanceof PieceBase ? positionOrPiece : this.findPiece(positionOrPiece);
     if (piece && piece.side !== this.turn) {
       this.pieces = this.pieces.filter((item) => item !== piece);
+      emitter.emit('eat', piece);
       return piece;
     }
   }
@@ -122,13 +204,21 @@ export default class Board extends Limit {
     };
   }
 
+  createPiece(options: Omit<PieceBaseOptions, 'board'>) {
+    const MapPiece = Pieces[options.type];
+    return new MapPiece({
+      board: this,
+      side: options.side,
+      initPosition: options.initPosition,
+    });
+  }
+
   static load(dumpedBoard: DumpedBoard) {
     const board = new Board();
     board.turn = dumpedBoard.turn;
     board.pieces = dumpedBoard.pieces.map((item) => {
-      const MapPiece = Pieces[item.type];
-      return new MapPiece({
-        board,
+      return board.createPiece({
+        type: item.type,
         side: item.side,
         initPosition: item.position,
       });

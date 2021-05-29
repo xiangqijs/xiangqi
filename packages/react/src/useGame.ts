@@ -9,6 +9,12 @@ const initGame = (forceUpdate: () => void) => {
   game.on('reset', () => {
     forceUpdate();
   });
+  game.on('undo', () => {
+    forceUpdate();
+  });
+  game.on('redo', () => {
+    forceUpdate();
+  });
   return game;
 };
 

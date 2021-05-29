@@ -135,7 +135,13 @@ export default abstract class PieceBase extends Limit {
 
   initPosition: Position;
 
-  /** 棋子上次的位置 */
+  /**
+   * 棋子上次的位置
+   *
+   * 注意，当棋子正常移动时可得到正常的位置信息，
+   * 如果通过 undo 操作时，该值为 undefined；
+   * 如果通过 redo 操作时，该值为 from 指定的 Position；
+   */
   prevPosition?: Position;
 
   position: Position;
@@ -183,12 +189,12 @@ export default abstract class PieceBase extends Limit {
   /** 移动棋子到下一位置 */
   moveTo(position: Position) {
     if (this.nextPositionsContain(position)) {
-      this.board.removePiece(position);
+      const eatenPiece = this.board.eatPiece(position);
 
       this.prevPosition = this.position;
       this.position = position;
 
-      emitter.emit('move', this);
+      emitter.emit('move', this, eatenPiece);
       if (this.board.end()) {
         // 当移除王棋时游戏结束，无需换边
         return;

@@ -161,6 +161,14 @@ export default () => {
         <button onClick={() => game.board.reset()} disabled={moving}>
           重新开始
         </button>
+        &nbsp;
+        <button disabled={!game.board.canUndo()} onClick={() => game.board.undo()}>
+          Undo
+        </button>
+        &nbsp;
+        <button disabled={!game.board.canRedo()} onClick={() => game.board.redo()}>
+          Redo
+        </button>
       </div>
     </div>
   );
