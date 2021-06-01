@@ -58,4 +58,9 @@ export default class Advisor extends Base {
         (this.side === Side.Red ? item.y >= 8 && item.y <= 10 : item.y >= 1 && item.y <= 3)
     );
   }
+
+  getFENChar() {
+    const char = this.type.charAt(0);
+    return this.side === Side.Red ? char : char.toLowerCase();
+  }
 }

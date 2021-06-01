@@ -1,9 +1,5 @@
-import { Board, DumpedBoard } from '@xiangqijs/core';
+import { Board, DumpedBoard, createEvents } from '@xiangqijs/core';
 
 export function getBoardInstance(board: DumpedBoard | Board) {
-  return board instanceof Board ? board : Board.load(board);
-}
-
-export function getRandomInt(max: number) {
-  return Math.floor(Math.random() * max); // < max
+  return board instanceof Board ? board.clone() : Board.load(board);
 }

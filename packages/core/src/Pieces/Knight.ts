@@ -65,4 +65,9 @@ export default class Knight extends Base {
 
     return result;
   }
+
+  getFENChar() {
+    const char = this.type.charAt(1);
+    return this.side === Side.Red ? char : char.toLowerCase();
+  }
 }

@@ -1,5 +1,4 @@
 import Board from '../Board';
-import emitter from '../emitter';
 import { isPositionEqual } from './utils';
 
 export enum Type {
@@ -79,6 +78,10 @@ export class PositionInteraction extends Limit {
 
   clone() {
     return new PositionInteraction(this.dump());
+  }
+
+  equal(position: Position | PositionInteraction) {
+    return this.x === position.x && this.y === position.y;
   }
 
   valid() {
@@ -182,27 +185,10 @@ export default abstract class PieceBase extends Limit {
   /** 获取棋子下一步可用的位置集合 */
   abstract getNextPositions(): Position[];
 
-  // abstract move(position: Position): void;
-
-  // abstract toNotation
-
-  /** 移动棋子到下一位置 */
-  moveTo(position: Position) {
-    if (this.nextPositionsContain(position)) {
-      const eatenPiece = this.board.eatPiece(position);
-
-      this.prevPosition = this.position;
-      this.position = position;
-
-      emitter.emit('move', this, eatenPiece);
-      if (this.board.end()) {
-        // 当移除王棋时游戏结束，无需换边
-        return;
-      }
-      this.board.switch();
-    } else {
-      console.log(`[warn] [${this.getName()}] at ${JSON.stringify(this.position)}: next position illegal.`);
-    }
+  // [FEN(福斯夫－爱德华兹记号法)]表示符
+  getFENChar() {
+    const char = this.type.charAt(0);
+    return this.side === Side.Red ? char : char.toLowerCase();
   }
 
   dump(): DumpedPiece {

@@ -1,10 +1,18 @@
+import produce from 'immer';
+import _slice from 'lodash/slice';
+import _cloneDeep from 'lodash/cloneDeep';
+import _last from 'lodash/last';
+import _padStart from 'lodash/padStart';
+
 import { Pawn, Cannon, Rook, Knight, Bishop, Advisor, King, Pieces } from '../Pieces';
 import PieceBase, { Limit, Position, Side, DumpedPiece, Type, PieceBaseOptions } from '../Pieces/Base';
-import emitter from '../emitter';
+import type { Emitter } from '../Game';
 
 export interface DumpedBoard {
   turn: Side;
   pieces: DumpedPiece[];
+  history: Move[];
+  head: number;
 }
 
 /** 每一着的数据结构 */
@@ -26,39 +34,79 @@ export interface Move {
 //     │
 //     │
 //     y
+// 根据[FEN(福斯夫－爱德华兹记号法)](https://zh.wikipedia.org/wiki/%E7%A6%8F%E6%96%AF%E5%A4%AB%EF%BC%8D%E6%84%9B%E5%BE%B7%E8%8F%AF%E8%8C%B2%E8%A8%98%E8%99%9F%E6%B3%95)命名
+
+export interface BoardOptions {
+  // 事件监听器
+  emitter?: Emitter;
+}
 
 export default class Board extends Limit {
   turn = Side.Red;
 
   positions = this.getPositions();
 
-  history: Move[] = [];
+  #history: Move[] = [];
 
-  head = -1;
+  #head = -1;
 
-  pieces = [...this.initBlockPieces(), ...this.initRedPieces()];
+  pieces = [...this.initBlockPieces(), ...this.initRedPieces()] as PieceBase[];
 
-  constructor() {
+  emitter?: Emitter;
+
+  get history() {
+    return this.#history;
+  }
+
+  set history(history: Move[]) {
+    // console.log('set history', history);
+    this.#history = history;
+  }
+
+  get head() {
+    return this.#head;
+  }
+
+  set head(head: number) {
+    // console.log('set head', this.head, '=>', head);
+    if (head < 0) {
+      throw new Error(`非法 head: ${head}`);
+    }
+    this.#head = head;
+  }
+
+  constructor(options?: BoardOptions) {
     super();
-    emitter.on('move', (piece, eatenPiece) => {
-      const move: Move = {
-        type: piece.type,
-        side: piece.side,
-        from: piece.prevPosition!,
-        to: piece.position,
-      };
-      if (eatenPiece) {
-        move.eat = eatenPiece.type;
-      }
+    this.emitter = options?.emitter;
+  }
 
-      // 如果 head 不是指向最后一着，则在移动时需要重写 history
-      if (this.head + 1 < this.history.length) {
-        this.history = this.history.slice(0, this.head + 1);
-      }
+  onMove(piece: PieceBase, eatenPiece?: PieceBase) {
+    const move: Move = {
+      type: piece.type,
+      side: piece.side,
+      from: piece.prevPosition!,
+      to: piece.position,
+    };
+    if (eatenPiece) {
+      move.eat = eatenPiece.type;
+    }
 
-      this.history.push(move);
-      this.head = this.history.length - 1;
+    // 如果 head 不是指向最后一着，则在移动时需要重写 history
+    if (this.head + 1 !== this.history.length) {
+      this.history = produce(this.history, (draft) => {
+        return _slice(draft, 0, this.head + 1);
+      });
+    }
+
+    const lastMove = _last(this.history);
+    if (lastMove && lastMove.side === move.side) {
+      console.log('非法 move，应为对方回合', JSON.stringify(move));
+    }
+
+    this.history = produce(this.history, (draft) => {
+      draft.push(move);
     });
+    this.head = this.history.length - 1;
   }
 
   initBlockPieces() {
@@ -103,6 +151,14 @@ export default class Board extends Limit {
     ];
   }
 
+  redPieces() {
+    return this.pieces.filter((item) => item.side === Side.Red);
+  }
+
+  blackPieces() {
+    return this.pieces.filter((item) => item.side === Side.Black);
+  }
+
   end() {
     return this.pieces.filter((item) => item.type === Type.King).length < 2;
   }
@@ -110,7 +166,7 @@ export default class Board extends Limit {
   reset() {
     this.pieces = [...this.initBlockPieces(), ...this.initRedPieces()];
     this.turn = Side.Red;
-    emitter.emit('reset', this);
+    this.emitter?.emit('reset', this);
   }
 
   canUndo() {
@@ -119,19 +175,23 @@ export default class Board extends Limit {
 
   undo() {
     if (this.canUndo()) {
+      // 落子之后在对方回合，故需要先换边再悔棋
+      this.switch();
       const undoMove = this.history[this.head];
       const targetPiece = this.findPiece(undoMove.to)!;
       targetPiece.position = undoMove.from;
       targetPiece.prevPosition = undefined;
       if (undoMove.eat) {
-        this.createPiece({
+        const eatenPiece = Board.createPiece({
+          board: this,
           type: undoMove.eat,
           side: undoMove.side === Side.Black ? Side.Red : Side.Black,
           initPosition: undoMove.to,
         });
+        this.pieces.push(eatenPiece);
       }
       this.head -= 1;
-      emitter.emit('undo', undoMove);
+      this.emitter?.emit('undo', undoMove);
     } else {
       console.warn('cannot undo!');
     }
@@ -151,7 +211,7 @@ export default class Board extends Limit {
         this.eatPiece(redoMove.to);
       }
       this.head += 1;
-      emitter.emit('undo', redoMove);
+      this.emitter?.emit('redo', redoMove);
     } else {
       console.warn('cannot redo!');
     }
@@ -185,14 +245,14 @@ export default class Board extends Limit {
   /** 换边 */
   switch() {
     this.turn = this.turn === Side.Red ? Side.Black : Side.Red;
-    emitter.emit('switch', this.turn);
+    this.emitter?.emit('switch', this.turn);
   }
 
   eatPiece(positionOrPiece: Position | PieceBase) {
     const piece = positionOrPiece instanceof PieceBase ? positionOrPiece : this.findPiece(positionOrPiece);
     if (piece && piece.side !== this.turn) {
       this.pieces = this.pieces.filter((item) => item !== piece);
-      emitter.emit('eat', piece);
+      this.emitter?.emit('eat', piece);
       return piece;
     }
   }
@@ -201,28 +261,95 @@ export default class Board extends Limit {
     return {
       turn: this.turn,
       pieces: this.pieces.map((item) => item.dump()),
+      history: _cloneDeep(this.history),
+      head: this.head,
     };
   }
 
-  createPiece(options: Omit<PieceBaseOptions, 'board'>) {
+  /** 获取目标棋子的下一步的所有着法 */
+  getNextMoves(piece: PieceBase): Move[] {
+    const nextPositions = piece.getNextPositions();
+    return nextPositions.map((item) => {
+      const move: Move = {
+        type: piece.type,
+        side: piece.side,
+        from: piece.position,
+        to: item,
+      };
+      const eatenPiece = this.findPiece(item);
+      if (eatenPiece) {
+        move.eat = eatenPiece.type;
+      }
+      return move;
+    });
+  }
+
+  /** 移动棋子到下一位置 */
+  move(piece: PieceBase, position: Position) {
+    if (piece.nextPositionsContain(position)) {
+      const eatenPiece = this.eatPiece(position);
+
+      piece.prevPosition = piece.position;
+      piece.position = position;
+
+      this.onMove(piece, eatenPiece);
+      this.emitter?.emit('move', piece, eatenPiece);
+      if (this.end()) {
+        // 当移除王棋时游戏结束，无需换边
+        return;
+      }
+      this.switch();
+    } else {
+      console.log(`[warn] next position illegal: ${JSON.stringify(piece.position)} => ${JSON.stringify(position)}`);
+    }
+  }
+
+  static createPiece(options: PieceBaseOptions) {
     const MapPiece = Pieces[options.type];
     return new MapPiece({
-      board: this,
+      board: options.board,
       side: options.side,
       initPosition: options.initPosition,
     });
   }
 
-  static load(dumpedBoard: DumpedBoard) {
-    const board = new Board();
+  static load(dumpedBoard: DumpedBoard, options?: BoardOptions) {
+    const board = new Board(options);
     board.turn = dumpedBoard.turn;
     board.pieces = dumpedBoard.pieces.map((item) => {
-      return board.createPiece({
+      return Board.createPiece({
+        board,
         type: item.type,
         side: item.side,
         initPosition: item.position,
       });
     });
+    board.history = dumpedBoard.history;
+    board.head = dumpedBoard.head;
     return board;
+  }
+
+  clone(options?: BoardOptions) {
+    return Board.load(this.dump(), options);
+  }
+
+  beautify() {
+    let result = '## 1,2,3,4,5,6,7,8,9\n';
+    this.positions.forEach((position, index) => {
+      if (index % this.maxX === 0) {
+        result += `${_padStart(`${index / this.maxX + 1}`, 2, '0')} `;
+      }
+      const piece = this.findPiece(position);
+      if (piece) {
+        result += `${piece.getFENChar()} `;
+      } else {
+        result += '_ ';
+      }
+      if (index % this.maxX === 8) {
+        result = result.trim();
+        result += `\n`;
+      }
+    });
+    return `\n${result}`;
   }
 }

@@ -1,8 +1,10 @@
 import { Board, DumpedBoard, PieceBase } from '@xiangqijs/core';
 
-import { getBoardInstance, getRandomInt } from './utils';
+import { getBoardInstance } from '../utils';
+import { getRandomInt } from './utils';
+import { Result } from '../types';
 
-export default function random(inputBoard: DumpedBoard | Board) {
+export default function random(inputBoard: DumpedBoard | Board): Result {
   const usedPieces: PieceBase[] = [];
 
   const board = getBoardInstance(inputBoard);
@@ -32,7 +34,7 @@ export default function random(inputBoard: DumpedBoard | Board) {
   const nextPositions = randomPiece.getNextPositions();
   const nextPosition = nextPositions[getRandomInt(nextPositions.length)];
   return {
-    current: randomPiece.position,
-    next: nextPosition,
+    from: randomPiece.position,
+    to: nextPosition,
   };
 }

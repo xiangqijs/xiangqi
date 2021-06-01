@@ -26,6 +26,10 @@
     "url": "https://github.com/xiangqijs/xiangqi/issues"
   },
   "dependencies": {
-    "@xiangqijs/core": "^0.1.0"
+    "@xiangqijs/core": "^0.1.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.170"
   }
 }

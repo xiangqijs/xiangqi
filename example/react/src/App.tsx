@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 
 import { useGame, Side, Type } from '@xiangqijs/react';
-import { random as randomAI } from '@xiangqijs/ai';
+import { random as randomAI, minimax as minimaxAI } from '@xiangqijs/ai';
 
 import ChessView, { ActionType } from './components/ChessView';
 
@@ -15,13 +15,15 @@ enum PlayerType {
 const playerOptions = [
   { value: PlayerType.Player, label: '玩家' },
   { value: PlayerType.RandomAI, label: 'AI (random)' },
-  { value: PlayerType.MinimaxAI, label: 'AI (minimax)', disabled: true },
+  { value: PlayerType.MinimaxAI, label: 'AI (minimax)' },
   { value: PlayerType.AlphaBetaAI, label: 'AI (alpha–beta)', disabled: true },
 ];
 
 function actions(fns: (() => void)[], options?: { index?: number; onEnd?: () => void }) {
   const { index = 0, onEnd } = options || {};
+  console.log('call action', index);
   fns[index]();
+  console.log('call action end', index);
   if (index + 1 < fns.length) {
     setTimeout(() => {
       actions(fns, { index: index + 1, onEnd });
@@ -37,21 +39,23 @@ export default () => {
   const actionRef = useRef<ActionType>();
   const [moving, setMoving] = useState(false);
   const [redPlayer, setRedPlayer] = useState(PlayerType.Player);
-  const [blackPlayer, setBlackPlayer] = useState(PlayerType.RandomAI);
+  const [blackPlayer, setBlackPlayer] = useState(PlayerType.MinimaxAI);
 
-  const handleRandomAI = () => {
-    const move = randomAI(game.board);
+  const handleAI = (type: 'random' | 'minimax') => {
+    setMoving(true);
+    const fn = type === 'random' ? randomAI : minimaxAI;
+    const move = fn(game.board);
     if (move) {
       console.log(
-        `move: ${game.board.findPiece(move.current)?.getName()} ${JSON.stringify(move.current)} => ${JSON.stringify(
-          move.next
+        `handleAI move: ${game.board.findPiece(move.from)?.getName()} ${JSON.stringify(move.from)} => ${JSON.stringify(
+          move.to
         )}`
       );
-      setMoving(true);
-      actions([() => actionRef.current?.click(move.current), () => actionRef.current?.click(move.next)], {
+      actions([() => actionRef.current?.click(move.from), () => actionRef.current?.click(move.to)], {
         onEnd: () => setMoving(false),
       });
     } else {
+      setMoving(false);
       alert(`${game.board.turn === Side.Red ? '红方' : '黑方'} 认输！`);
     }
   };
@@ -59,19 +63,25 @@ export default () => {
   const handleSwitch = (turn: Side) => {
     setTimeout(() => {
       if (turn === Side.Red) {
-        // 红方非普遍玩家
+        // 红方非普通玩家
         switch (redPlayer) {
           case PlayerType.RandomAI:
-            handleRandomAI();
+            handleAI('random');
+            return;
+          case PlayerType.MinimaxAI:
+            handleAI('minimax');
             return;
           default:
             return;
         }
       } else {
-        // 黑方非普遍玩家
+        // 黑方非普通玩家
         switch (blackPlayer) {
           case PlayerType.RandomAI:
-            handleRandomAI();
+            handleAI('random');
+            return;
+          case PlayerType.MinimaxAI:
+            handleAI('minimax');
             return;
           default:
             return;
@@ -144,17 +154,15 @@ export default () => {
       <hr />
       <div>
         <label>Next move by AI:</label>&nbsp;
-        <button disabled={moving} onClick={handleRandomAI}>
+        <button disabled={moving} onClick={() => handleAI('random')}>
           random
         </button>
         &nbsp;
-        <button disabled onClick={handleRandomAI}>
-          minimax (coming soon)
+        <button disabled={moving} onClick={() => handleAI('minimax')}>
+          minimax
         </button>
         &nbsp;
-        <button disabled onClick={handleRandomAI}>
-          alpha–beta (coming soon)
-        </button>
+        <button disabled>alpha–beta (coming soon)</button>
       </div>
       <hr />
       <div>
@@ -162,11 +170,11 @@ export default () => {
           重新开始
         </button>
         &nbsp;
-        <button disabled={!game.board.canUndo()} onClick={() => game.board.undo()}>
+        <button disabled={!game.board.canUndo() || moving} onClick={() => game.board.undo()}>
           Undo
         </button>
         &nbsp;
-        <button disabled={!game.board.canRedo()} onClick={() => game.board.redo()}>
+        <button disabled={!game.board.canRedo() || moving} onClick={() => game.board.redo()}>
           Redo
         </button>
       </div>

@@ -26,13 +26,13 @@ const ChessView: React.FC<ChessViewProps> = (props) => {
     const piece = board.findPiece(position);
     if (currentPiece === piece) {
       setCurrentPiece(undefined);
-      return
+      return;
     }
     if (board.pieces.filter((item) => item.type === Type.King).length < 2) {
       return;
     }
     if (currentPiece?.nextPositionsContain(position)) {
-      currentPiece.moveTo(position);
+      board.move(currentPiece, position);
       setPrevPiece(currentPiece);
       setCurrentPiece(undefined);
       return;
